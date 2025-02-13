@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Principal": {
+                "Federated": "arn:aws:iam::${account_id}:oidc-provider/${provider_domain}/org/${org_id}"
+            },
+            "Condition": {
+                "StringEquals": {
+                    "${provider_domain}/org/${org_id}:aud": [
+                        "${org_id}"
+                    ]
+                },
+                "StringLike": {
+                    "${provider_domain}/org/${org_id}:sub": "org/${org_id}/project/${project_id}/user/*"
+                }
+            }
+        }
+    ]
+}
