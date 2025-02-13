@@ -32,8 +32,10 @@ data "aws_iam_policy_document" "permissions" {
 resource "aws_iam_role" "role" {
   for_each = var.project_aws_permissions
 
-  name        = "circleci-${var.organization}-${each.key}"
-  description = "Role for CircleCI project ${each.key} of the ${var.organization} org"
+  name                  = each.key
+  path                  = "/OIDC/Circleci/${var.organization}/" # see https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names
+  force_detach_policies = true
+  description           = "Role for CircleCI project ${each.key} of the ${var.organization} org"
 
   assume_role_policy = templatefile("${path.module}/trust-policy.tftpl.json", {
     account_id      = local.account_id
