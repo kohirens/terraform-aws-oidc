@@ -2,7 +2,12 @@
 
 Add CircleCI OIDC as an IAM provider to an AWS account.
 
-**Example**:
+## Status
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/kohirens/terraform-aws-oidc-circleci/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kohirens/terraform-aws-oidc-circleci/tree/main)
+
+
+## Example
 
 ```terraform
 module "iam_oidc_provider" {
