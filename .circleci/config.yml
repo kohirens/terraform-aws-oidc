@@ -1,0 +1,142 @@
+version: 2.1
+
+orbs:
+  vr: kohirens/version-release@4.4.4
+
+parameters:
+  ctx_ci_cd:
+    default: kohirens-automation
+    description: Secrets context
+    type: string
+  ctx_dockerhub:
+    default: kohirens-automation-dockerhub
+    description: Secrets context
+    type: string
+  ctx_iac_test:
+      default: kohirens-iac-test
+      description: Secrets context
+      type: string
+  ctx_iac_prod:
+    default: kohirens-iac-prod
+    description: Secrets context
+    type: string
+  ssh_finger:
+    description: SSH fingerprint.
+    type: string
+    default: "SHA256:gLHSzAw3FC+CvQ0qw3vRJYMGJXPn9ZLd1j1bwCXPun0"
+  triggered_flow:
+    default: "workflow-selector"
+    description: Workflow to be executed.
+    type: string
+
+main-filter: &branches-to-skip
+  branches: { ignore: /main|auto-update-changelog/ }
+
+executors:
+  kohirens-aws:
+    docker:
+      - image: kohirens/alpine-awscli:2.13.32
+        auth:
+          username: ${DH_USER}
+          password: ${DH_PASS}
+
+  terraform-with-awscli:
+    docker:
+      - image: kohirens/circleci-aws-iac-tf:0.2.0
+        auth:
+          username: ${DH_USER}
+          password: ${DH_PASS}
+
+  terraform:
+    docker:
+      - image: hashicorp/terraform:1.10.2
+        auth:
+          username: ${DH_USER}
+          password: ${DH_PASS}
+
+commands:
+  aws-oidc-setup:
+    description: Setup AWS auth using OIDC token
+    parameters:
+      session_duration:
+        default: 900
+        type: integer
+    steps:
+      - run:
+          name: Get AWS credentials
+          command: |
+            set -- $(aws sts assume-role-with-web-identity --role-arn "${CIRCLECI_OIDC_ROLE_ARN}" --role-session-name "${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}" --web-identity-token "${CIRCLE_OIDC_TOKEN}" --duration-seconds << parameters.session_duration >> --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text)
+            aws_key="${1}" && shift
+            aws_secret="${1}" && shift
+            aws_token="${1}" && shift
+            mkdir -p ~/.aws
+            echo '[default]' > ~/.aws/credentials
+            echo "aws_access_key_id=${aws_key}" >> ~/.aws/credentials
+            echo "aws_secret_access_key=${aws_secret}" >> ~/.aws/credentials
+            echo "aws_session_token=${aws_token}" >> ~/.aws/credentials
+            if [ -f ~/.aws/credentials ]; then
+                echo "credentials retrieved"
+                exit 0
+            fi
+            echo "could not retrieve credentials"
+            exit 1
+      - run:
+          name: Verify AWS credentials
+          command: |
+            aws sts get-caller-identity
+
+jobs:
+  co:
+    executor: terraform
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./
+
+  test-iac:
+    executor: terraform
+    steps:
+      - attach_workspace: { at: . }
+      - run:
+          name: Check Terraform module formatting
+          command: terraform fmt -check -write=false -diff
+
+workflows:
+  quality_checks:
+    jobs:
+      - co:
+          filters: *branches-to-skip
+      - test-iac:
+          context:
+            - << pipeline.parameters.ctx_dockerhub >>
+            - << pipeline.parameters.ctx_iac_test >>
+          requires: [ co ]
+
+  workflow-selector:
+    when:
+      and:
+        - equal: ["workflow-selector", << pipeline.parameters.triggered_flow >>]
+        - equal: [ main, << pipeline.git.branch >> ]
+    jobs:
+        - vr/workflow-selector:
+            context: << pipeline.parameters.ctx_ci_cd >>
+            ssh_finger: << pipeline.parameters.ssh_finger >>
+
+  publish-changelog:
+    when:
+      and:
+        - equal: ["publish-changelog", << pipeline.parameters.triggered_flow >>]
+    jobs:
+        - vr/publish-changelog:
+            context: << pipeline.parameters.ctx_ci_cd >>
+            ssh_finger: << pipeline.parameters.ssh_finger >>
+
+  publish-release-tag:
+    when:
+      and:
+        - equal: ["publish-release-tag", << pipeline.parameters.triggered_flow >>]
+    jobs:
+        - vr/tag-and-release:
+            context: << pipeline.parameters.ctx_ci_cd >>
