@@ -1,29 +1,27 @@
-# Terraform AWS OIDC CircleCI
+# Terraform AWS OIDC
 
-Add CircleCI OIDC as an IAM provider to an AWS account.
+Add OIDC providers to an AWS account.
 
 ## Status
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/kohirens/terraform-aws-oidc-circleci/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kohirens/terraform-aws-oidc-circleci/tree/main)
 
-
 ## Example
 
 ```terraform
-module "iam_oidc_provider" {
-  source = "https://github.com/kohirens/terraform-aws-oidc-circleci"
+module "circleci_oidc" {
+  source = "https://github.com/kohirens/terraform-aws-oidc"
+  circleci = {
+    organization_name = "myorg"
+    organization_id   = "aaaaaaaa-0000-1111-2a22-a33333333333"
 
-  organization    = "myorg"
-  organization_id = "aaaaaaaa-0000-1111-2a22-a33333333333"
-
-  project_aws_permissions = {
-    "learn-terraform-circleci" = {
-      id = "aaaaaaaa-0000-1111-2a22-b44444444444"
-      statements = {
-        "statement1" = {
+    projects = {
+      "project-1-name" = {
+        id = "aaaaaaaa-0000-1111-2a22-b44444444444"
+        statements = list({
           actions   = ["*"]
           resources = ["*"]
-        }
+        })
       }
     }
   }

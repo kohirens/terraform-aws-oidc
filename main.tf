@@ -1,53 +1,10 @@
-data "aws_caller_identity" "current" {}
-
-locals {
-  provider_url = "https://${var.provider_domain}/org/${var.organization_id}"
-  account_id   = data.aws_caller_identity.current.account_id
-}
-
 data "tls_certificate" "oidc" {
-  url = local.provider_url
+  url = var.provider_url
 }
 
 resource "aws_iam_openid_connect_provider" "oidc" {
-  url = local.provider_url
+  url = var.provider_url
   # because the provider URL requires the organization, making it unique, you can't provide multiple client IDs.
-  client_id_list  = [var.organization_id]
+  client_id_list  = var.client_id_list
   thumbprint_list = [data.tls_certificate.oidc.certificates[0].sha1_fingerprint]
-}
-
-data "aws_iam_policy_document" "permissions" {
-  for_each = var.project_aws_permissions
-
-  dynamic "statement" {
-    for_each = each.value.statements
-    content {
-      actions   = statement.value.actions
-      effect    = "Allow"
-      resources = statement.value.resources
-    }
-  }
-}
-
-resource "aws_iam_role" "role" {
-  for_each = var.project_aws_permissions
-
-  name                  = each.key
-  path                  = "/OIDC/Circleci/${var.organization}/" # see https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names
-  force_detach_policies = true
-  description           = "Role for CircleCI project ${each.key} of the ${var.organization} org"
-
-  assume_role_policy = templatefile("${path.module}/trust-policy.tftpl.json", {
-    account_id      = local.account_id
-    provider_domain = var.provider_domain
-    org_id          = var.organization_id
-    project_id      = each.value.id
-  })
-}
-
-resource "aws_iam_role_policy" "role" {
-  for_each = data.aws_iam_policy_document.permissions
-  role     = aws_iam_role.role[each.key].name
-  name     = var.organization
-  policy   = each.value.json
 }
