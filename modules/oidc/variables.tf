@@ -23,5 +23,9 @@ variable "iam_roles" {
   type = map(object({
     path               = string
     assume_role_policy = string
+    statements = list(object({
+      actions   = list(string)
+      resources = list(string)
+    }))
   }))
 }
