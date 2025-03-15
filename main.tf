@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   account_id   = data.aws_caller_identity.current.account_id
-  oidc_configs = merge(local.circleci_configs, local.hashicorp_configs)
+  oidc_configs = merge(local.circleci_configs, local.hashicorp_configs, local.github_configs)
 }
 
 module "oidc" {
