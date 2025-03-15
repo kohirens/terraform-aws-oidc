@@ -7,3 +7,4 @@
 # -----
 /.terraform.lock.hcl
 /terraform.tf
+*_test.tf

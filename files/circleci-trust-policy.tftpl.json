@@ -5,16 +5,16 @@
             "Effect": "Allow",
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Principal": {
-                "Federated": "arn:aws:iam::${account_id}:oidc-provider/${domain}/org/${oranization_id}"
+                "Federated": "arn:aws:iam::${account_id}:oidc-provider/${domain}/org/${organization_id}"
             },
             "Condition": {
                 "StringEquals": {
-                    "${domain}/org/${oranization_id}:aud": [
-                        "${oranization_id}"
+                    "${domain}/org/${organization_id}:aud": [
+                        "${organization_id}"
                     ]
                 },
                 "StringLike": {
-                    "${domain}/org/${oranization_id}:sub": "org/${oranization_id}/project/${project_id}/user/*"
+                    "${domain}/org/${organization_id}:sub": "org/${organization_id}/project/${project_id}/user/*"
                 }
             }
         }
