@@ -8,3 +8,10 @@ resource "aws_iam_openid_connect_provider" "oidc" {
   client_id_list  = var.client_id_list
   thumbprint_list = [data.tls_certificate.oidc.certificates[0].sha1_fingerprint]
 }
+
+# Used to get this account ID we're deploying to.
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+}
