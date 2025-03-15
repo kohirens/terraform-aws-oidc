@@ -39,3 +39,28 @@ variable "hashicorp_oidc_audience" {
   description = "The list of client IDs; defaults to audience in HCP Terraform for AWS."
   type        = string
 }
+
+variable "github_provider_url" {
+  default     = "https://token.actions.githubusercontent.com"
+  description = "The FQDN of the GitHub OIDC provider"
+  type        = string
+}
+
+variable "github_oidc_audience" {
+  default     = "sts.amazonaws.com"
+  description = "The audience for GitHub OIDC AWS."
+  type        = string
+}
+
+variable "github" {
+  default     = {}
+  description = "Grant a GitHub organization's repositories access to AWS resources."
+  type = map(object({
+    repos = map(object({
+      statements = list(object({
+        actions   = list(string)
+        resources = list(string)
+      }))
+    }))
+  }))
+}
