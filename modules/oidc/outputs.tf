@@ -1,6 +1,6 @@
 output "iam_oidc_arn" {
   description = "ARN of an IAM OpenID Connect provider"
-  value = aws_iam_openid_connect_provider.oidc.arn
+  value       = aws_iam_openid_connect_provider.oidc.arn
 }
 
 output "iam_role_arns" {
