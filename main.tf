@@ -6,7 +6,7 @@ locals {
   oidc_configs = merge(local.circleci_configs, local.hashicorp_configs, local.github_configs)
 }
 
-module "oidc" {
+module "oidc_providers" {
   source = "./modules/oidc"
 
   for_each          = local.oidc_configs
