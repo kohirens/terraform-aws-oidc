@@ -2,17 +2,15 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  account_id   = data.aws_caller_identity.current.account_id
-  oidc_configs = merge(local.circleci_configs, local.hashicorp_configs, local.github_configs)
+  account_id = data.aws_caller_identity.current.account_id
+  idp        = merge(local.circleci_idp, local.hashicorp_idp, local.github_idp)
 }
 
 module "oidc_providers" {
-  source = "./modules/oidc"
-
-  for_each          = local.oidc_configs
-  client_id_list    = each.value.client_id_list
-  iam_roles         = each.value.iam_roles
-  organization_name = each.key
-  provider_name     = local.circleci_name
-  provider_url      = each.value.provider_url
+  source         = "./modules/oidc"
+  for_each       = local.idp
+  client_id_list = each.value.client_id_list
+  iam_roles      = each.value.iam_roles
+  provider_name  = each.key
+  provider_url   = each.value.provider_url
 }

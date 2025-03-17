@@ -5,6 +5,7 @@
 
 # Files
 # -----
-/.terraform.lock.hcl
-/terraform.tf
+.terraform.lock.hcl
+terraform.tf
 *_test.tf
+tfplan
