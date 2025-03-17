@@ -13,7 +13,7 @@ resource "aws_iam_openid_connect_provider" "oidc" {
 resource "aws_iam_role" "oidc" {
   for_each = var.iam_roles
 
-  name                  = each.key
+  name                  = each.key == "*" ? "all" : each.key
   path                  = each.value.path # see https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names
   force_detach_policies = true
   description           = "Role for OIDC ${var.provider_name} project ${each.key} of the ${var.organization_name} org"
@@ -38,6 +38,6 @@ data "aws_iam_policy_document" "permissions" {
 resource "aws_iam_role_policy" "permissions" {
   for_each = data.aws_iam_policy_document.permissions
   role     = aws_iam_role.oidc[each.key].name
-  name     = "OIDC-${var.provider_name}-${var.organization_name}"
+  name     = each.key == "*" ? "OIDC-${var.provider_name}-${var.organization_name}-all" : "OIDC-${var.provider_name}-${var.organization_name}"
   policy   = each.value.json
 }
