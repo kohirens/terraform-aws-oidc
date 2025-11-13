@@ -1,4 +1,4 @@
-module "idp_oidc_setup" {
+module "iam_oidc_providers" {
   source = "../.."
 
   circleci = {
