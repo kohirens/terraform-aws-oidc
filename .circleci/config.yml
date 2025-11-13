@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  vr: kohirens/version-release@4.4.4
+  vr: kohirens/version-release@5.1.8
 
 parameters:
   ctx_ci_cd:
@@ -20,10 +20,6 @@ parameters:
     default: kohirens-iac-prod
     description: Secrets context
     type: string
-  ssh_finger:
-    description: SSH fingerprint.
-    type: string
-    default: "SHA256:gLHSzAw3FC+CvQ0qw3vRJYMGJXPn9ZLd1j1bwCXPun0"
   triggered_flow:
     default: "workflow-selector"
     description: Workflow to be executed.
@@ -122,7 +118,6 @@ workflows:
     jobs:
         - vr/workflow-selector:
             context: << pipeline.parameters.ctx_ci_cd >>
-            ssh_finger: << pipeline.parameters.ssh_finger >>
 
   publish-changelog:
     when:
@@ -131,7 +126,8 @@ workflows:
     jobs:
         - vr/publish-changelog:
             context: << pipeline.parameters.ctx_ci_cd >>
-            ssh_finger: << pipeline.parameters.ssh_finger >>
+            committer_email: "619281+b01@users.noreply.github.com"
+            committer_name: "Khalifah K Shabazz"
 
   publish-release-tag:
     when:
