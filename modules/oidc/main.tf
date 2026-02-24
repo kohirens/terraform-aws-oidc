@@ -14,7 +14,7 @@ locals {
 
 resource "aws_iam_role" "oidc" {
   for_each              = local.iam_roles
-  name                  = strcontains(each.key, "*") ? replace(each.key, "*", "all") : each.key
+  name                  = strcontains(each.key, "*") ? each.key == "*" ? replace(each.key, "*", "${var.provider_name}-all") : replace(each.key, "*", "all") : each.key
   path                  = each.value.path # see https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names
   force_detach_policies = true
   description           = "Role for OIDC ${var.provider_name} unit ${each.key} of the ${each.value.organization} org"
