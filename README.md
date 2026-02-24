@@ -4,7 +4,7 @@ Add OIDC providers to an AWS account.
 
 ## Status
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/kohirens/terraform-aws-oidc-circleci/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kohirens/terraform-aws-oidc-circleci/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/kohirens/terraform-aws-oidc/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/kohirens/terraform-aws-oidc/tree/main)
 
 ## How To Use
 
